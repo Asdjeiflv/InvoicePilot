@@ -12,22 +12,32 @@ class RecalculateInvoiceBalanceAction
         return DB::transaction(function () use ($invoice) {
             // Sum all payments
             $totalPaid = $invoice->payments()->sum('amount');
-            
-            // Update invoice
+
+            // Update invoice amounts
             $invoice->paid_amount = $totalPaid;
             $invoice->balance_due = $invoice->total - $totalPaid;
-            
-            // Update status based on balance
+
+            // Don't change status for canceled or draft invoices
+            if (in_array($invoice->status, ['canceled', 'draft'])) {
+                $invoice->save();
+                return $invoice->fresh();
+            }
+
+            // Update status based on balance and due date
             if ($invoice->balance_due <= 0) {
                 $invoice->status = 'paid';
-            } elseif ($totalPaid > 0) {
+            } elseif ($totalPaid > 0 && $totalPaid < $invoice->total) {
                 $invoice->status = 'partial_paid';
-            } elseif ($invoice->status !== 'draft' && $invoice->due_date->isPast()) {
+            } elseif ($invoice->due_date && $invoice->due_date->isPast() && $invoice->balance_due > 0) {
+                // Only set to overdue if there's an unpaid balance and past due date
                 $invoice->status = 'overdue';
+            } elseif ($invoice->status === 'overdue' && $invoice->due_date && !$invoice->due_date->isPast()) {
+                // Revert from overdue if due date was extended
+                $invoice->status = 'issued';
             }
-            
+
             $invoice->save();
-            
+
             return $invoice->fresh();
         });
     }

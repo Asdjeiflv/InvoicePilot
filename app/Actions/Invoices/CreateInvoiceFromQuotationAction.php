@@ -15,8 +15,30 @@ class CreateInvoiceFromQuotationAction
 
     public function execute(Quotation $quotation, array $data = []): Invoice
     {
+        // Validate quotation status
         if ($quotation->status !== 'approved') {
-            throw new \RuntimeException('Only approved quotations can be converted to invoices');
+            throw new \InvalidArgumentException('承認済みの見積のみ請求書に変換できます');
+        }
+
+        // Check if quotation already has invoices
+        if ($quotation->invoices()->exists()) {
+            throw new \InvalidArgumentException('この見積は既に請求書が作成されています');
+        }
+
+        // Validate quotation is not soft deleted
+        if ($quotation->trashed()) {
+            throw new \InvalidArgumentException('削除された見積は請求書に変換できません');
+        }
+
+        // Validate client exists and is not deleted
+        $quotation->loadMissing('client');
+        if (!$quotation->client || $quotation->client->trashed()) {
+            throw new \InvalidArgumentException('取引先が存在しないか削除されています');
+        }
+
+        // Validate quotation has items
+        if ($quotation->items->isEmpty()) {
+            throw new \InvalidArgumentException('明細行が存在しない見積は請求書に変換できません');
         }
 
         return DB::transaction(function () use ($quotation, $data) {

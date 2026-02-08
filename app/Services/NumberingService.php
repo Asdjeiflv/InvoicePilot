@@ -18,23 +18,26 @@ class NumberingService
         $prefix = "Q-{$year}-";
 
         return DB::transaction(function () use ($prefix, $year) {
-            // Get max number for this year with row lock
-            $lastQuotation = Quotation::where('quotation_no', 'like', "{$prefix}%")
+            // Get all quotations for this year with row lock
+            $quotations = Quotation::where('quotation_no', 'like', "{$prefix}%")
                 ->lockForUpdate()
-                ->orderByRaw('CAST(SUBSTRING(quotation_no, -5) AS UNSIGNED) DESC')
-                ->first();
+                ->pluck('quotation_no');
 
-            if ($lastQuotation) {
-                // Extract number and increment
-                $lastNumber = (int) substr($lastQuotation->quotation_no, -5);
-                $nextNumber = $lastNumber + 1;
-            } else {
-                $nextNumber = 1;
+            // Extract and find max number using regex
+            $maxNumber = 0;
+            foreach ($quotations as $quotationNo) {
+                if (preg_match('/-(\d{5})$/', $quotationNo, $matches)) {
+                    $number = (int) $matches[1];
+                    if ($number > $maxNumber) {
+                        $maxNumber = $number;
+                    }
+                }
             }
 
+            $nextNumber = $maxNumber + 1;
             $quotationNo = $prefix . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
 
-            // Double check uniqueness
+            // Double check uniqueness (防御的プログラミング)
             $attempts = 0;
             while (Quotation::where('quotation_no', $quotationNo)->exists() && $attempts < 10) {
                 $nextNumber++;
@@ -43,7 +46,7 @@ class NumberingService
             }
 
             if ($attempts >= 10) {
-                throw new \RuntimeException('Failed to generate unique quotation number after 10 attempts');
+                throw new \RuntimeException('見積番号の生成に失敗しました（10回試行後）');
             }
 
             return $quotationNo;
@@ -60,23 +63,26 @@ class NumberingService
         $prefix = "I-{$year}-";
 
         return DB::transaction(function () use ($prefix, $year) {
-            // Get max number for this year with row lock
-            $lastInvoice = Invoice::where('invoice_no', 'like', "{$prefix}%")
+            // Get all invoices for this year with row lock
+            $invoices = Invoice::where('invoice_no', 'like', "{$prefix}%")
                 ->lockForUpdate()
-                ->orderByRaw('CAST(SUBSTRING(invoice_no, -5) AS UNSIGNED) DESC')
-                ->first();
+                ->pluck('invoice_no');
 
-            if ($lastInvoice) {
-                // Extract number and increment
-                $lastNumber = (int) substr($lastInvoice->invoice_no, -5);
-                $nextNumber = $lastNumber + 1;
-            } else {
-                $nextNumber = 1;
+            // Extract and find max number using regex
+            $maxNumber = 0;
+            foreach ($invoices as $invoiceNo) {
+                if (preg_match('/-(\d{5})$/', $invoiceNo, $matches)) {
+                    $number = (int) $matches[1];
+                    if ($number > $maxNumber) {
+                        $maxNumber = $number;
+                    }
+                }
             }
 
+            $nextNumber = $maxNumber + 1;
             $invoiceNo = $prefix . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
 
-            // Double check uniqueness
+            // Double check uniqueness (防御的プログラミング)
             $attempts = 0;
             while (Invoice::where('invoice_no', $invoiceNo)->exists() && $attempts < 10) {
                 $nextNumber++;
@@ -85,7 +91,7 @@ class NumberingService
             }
 
             if ($attempts >= 10) {
-                throw new \RuntimeException('Failed to generate unique invoice number after 10 attempts');
+                throw new \RuntimeException('請求番号の生成に失敗しました（10回試行後）');
             }
 
             return $invoiceNo;

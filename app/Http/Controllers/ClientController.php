@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreClientRequest;
 use App\Http\Requests\UpdateClientRequest;
-use App\Models\AuditLog;
 use App\Models\Client;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -54,9 +53,6 @@ class ClientController extends Controller
     {
         $client = Client::create($request->validated());
 
-        // Log audit
-        AuditLog::log('created', Client::class, $client->id, null, $client->toArray());
-
         return redirect()
             ->route('clients.show', $client)
             ->with('success', 'Client created successfully.');
@@ -90,12 +86,7 @@ class ClientController extends Controller
      */
     public function update(UpdateClientRequest $request, Client $client)
     {
-        $before = $client->toArray();
-
         $client->update($request->validated());
-
-        // Log audit
-        AuditLog::log('updated', Client::class, $client->id, $before, $client->fresh()->toArray());
 
         return redirect()
             ->route('clients.show', $client)
@@ -107,12 +98,7 @@ class ClientController extends Controller
      */
     public function destroy(Client $client)
     {
-        $before = $client->toArray();
-
         $client->delete();
-
-        // Log audit
-        AuditLog::log('deleted', Client::class, $client->id, $before, null);
 
         return redirect()
             ->route('clients.index')
