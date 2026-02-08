@@ -25,6 +25,25 @@ Route::middleware(['auth', 'throttle:60,1'])->group(function () {
 
     // Clients Resource
     Route::resource('clients', \App\Http\Controllers\ClientController::class);
+
+    // Quotations Resource
+    Route::resource('quotations', \App\Http\Controllers\QuotationController::class);
+    Route::post('quotations/{quotation}/approve', [\App\Http\Controllers\QuotationController::class, 'approve'])
+        ->name('quotations.approve');
+    Route::post('quotations/{quotation}/reject', [\App\Http\Controllers\QuotationController::class, 'reject'])
+        ->name('quotations.reject');
+
+    // Invoices Resource
+    Route::resource('invoices', \App\Http\Controllers\InvoiceController::class);
+    Route::post('invoices/{invoice}/issue', [\App\Http\Controllers\InvoiceController::class, 'issue'])
+        ->name('invoices.issue');
+    Route::post('invoices/{invoice}/cancel', [\App\Http\Controllers\InvoiceController::class, 'cancel'])
+        ->name('invoices.cancel');
+    Route::post('invoices/from-quotation', [\App\Http\Controllers\InvoiceController::class, 'createFromQuotation'])
+        ->name('invoices.from-quotation');
+
+    // Payments Resource
+    Route::resource('payments', \App\Http\Controllers\PaymentController::class);
 });
 
 require __DIR__.'/auth.php';
