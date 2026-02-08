@@ -13,7 +13,8 @@ class QuotationPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // All authenticated users can view quotations
+        return true;
     }
 
     /**
@@ -21,7 +22,8 @@ class QuotationPolicy
      */
     public function view(User $user, Quotation $quotation): bool
     {
-        return false;
+        // All authenticated users can view quotations
+        return true;
     }
 
     /**
@@ -29,7 +31,8 @@ class QuotationPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // All authenticated users can create quotations
+        return true;
     }
 
     /**
@@ -37,7 +40,8 @@ class QuotationPolicy
      */
     public function update(User $user, Quotation $quotation): bool
     {
-        return false;
+        // All authenticated users can update quotations
+        return true;
     }
 
     /**
@@ -45,7 +49,8 @@ class QuotationPolicy
      */
     public function delete(User $user, Quotation $quotation): bool
     {
-        return false;
+        // All authenticated users can delete quotations
+        return true;
     }
 
     /**
@@ -53,7 +58,8 @@ class QuotationPolicy
      */
     public function restore(User $user, Quotation $quotation): bool
     {
-        return false;
+        // All authenticated users can restore quotations
+        return true;
     }
 
     /**
@@ -61,6 +67,7 @@ class QuotationPolicy
      */
     public function forceDelete(User $user, Quotation $quotation): bool
     {
-        return false;
+        // All authenticated users can force delete quotations
+        return true;
     }
 }

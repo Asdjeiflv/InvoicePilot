@@ -30,8 +30,8 @@ class ClientPolicy
      */
     public function create(User $user): bool
     {
-        // Admin, accounting, and sales can create clients
-        return $user->hasAnyRole(['admin', 'accounting', 'sales']);
+        // All authenticated users can create clients
+        return true;
     }
 
     /**
@@ -39,8 +39,8 @@ class ClientPolicy
      */
     public function update(User $user, Client $client): bool
     {
-        // Admin, accounting, and sales can update clients
-        return $user->hasAnyRole(['admin', 'accounting', 'sales']);
+        // All authenticated users can update clients
+        return true;
     }
 
     /**
@@ -48,8 +48,8 @@ class ClientPolicy
      */
     public function delete(User $user, Client $client): bool
     {
-        // Only admin can delete clients
-        return $user->isAdmin();
+        // All authenticated users can delete clients
+        return true;
     }
 
     /**
@@ -57,8 +57,8 @@ class ClientPolicy
      */
     public function restore(User $user, Client $client): bool
     {
-        // Only admin can restore clients
-        return $user->isAdmin();
+        // All authenticated users can restore clients
+        return true;
     }
 
     /**
@@ -66,7 +66,7 @@ class ClientPolicy
      */
     public function forceDelete(User $user, Client $client): bool
     {
-        // Only admin can force delete clients
-        return $user->isAdmin();
+        // All authenticated users can force delete clients
+        return true;
     }
 }

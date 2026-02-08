@@ -22,6 +22,7 @@ class Quotation extends Model
         'tax_total',
         'total',
         'status',
+        'notes',
         'created_by',
     ];
 
@@ -32,6 +33,8 @@ class Quotation extends Model
         'tax_total' => 'decimal:2',
         'total' => 'decimal:2',
     ];
+
+    protected $appends = ['expiry_date'];
 
     public function client(): BelongsTo
     {
@@ -66,5 +69,13 @@ class Quotation extends Model
     public function canBeSent(): bool
     {
         return in_array($this->status, ['draft']);
+    }
+
+    /**
+     * Accessor for expiry_date (maps to valid_until)
+     */
+    public function getExpiryDateAttribute()
+    {
+        return $this->valid_until;
     }
 }

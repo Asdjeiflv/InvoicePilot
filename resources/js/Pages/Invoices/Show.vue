@@ -24,9 +24,16 @@ interface InvoiceItem {
     line_total: number;
 }
 
-interface Invoice {
+interface Payment {
     id: number;
-    invoice_no: string;
+    payment_date: string;
+    amount: number;
+    method: string;
+}
+
+interface Quotation {
+    id: number;
+    quotation_no: string;
 }
 
 interface Invoice {
@@ -38,10 +45,13 @@ interface Invoice {
     subtotal: number;
     tax_total: number;
     total: number;
+    paid_amount: number;
+    balance_due: number;
     status: string;
     notes: string | null;
     items: InvoiceItem[];
-    invoices: Invoice[];
+    payments: Payment[];
+    quotation: Quotation | null;
 }
 
 interface Props {
@@ -53,10 +63,11 @@ const props = defineProps<Props>();
 const statusBadgeClass = (status: string) => {
     const classes: Record<string, string> = {
         draft: 'bg-gray-100 text-gray-800',
-        sent: 'bg-blue-100 text-blue-800',
-        approved: 'bg-green-100 text-green-800',
-        rejected: 'bg-red-100 text-red-800',
-        expired: 'bg-yellow-100 text-yellow-800',
+        issued: 'bg-blue-100 text-blue-800',
+        partial_paid: 'bg-yellow-100 text-yellow-800',
+        paid: 'bg-green-100 text-green-800',
+        overdue: 'bg-red-100 text-red-800',
+        canceled: 'bg-gray-100 text-gray-800',
     };
     return classes[status] || 'bg-gray-100 text-gray-800';
 };
@@ -64,10 +75,11 @@ const statusBadgeClass = (status: string) => {
 const statusLabel = (status: string) => {
     const labels: Record<string, string> = {
         draft: '下書き',
-        sent: '送付済み',
-        approved: '承認済み',
-        rejected: '却下',
-        expired: '期限切れ',
+        issued: '発行済み',
+        partial_paid: '一部入金',
+        paid: '支払済み',
+        overdue: '期限切れ',
+        canceled: 'キャンセル',
     };
     return labels[status] || status;
 };
@@ -76,6 +88,8 @@ const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('ja-JP', {
         style: 'currency',
         currency: 'JPY',
+        maximumFractionDigits: 0,
+        minimumFractionDigits: 0,
     }).format(amount);
 };
 
@@ -83,15 +97,15 @@ const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('ja-JP');
 };
 
-const approve = () => {
-    if (confirm('この請求書を承認しますか?')) {
-        router.post(route('invoices.approve', props.invoice.id));
+const issueInvoice = () => {
+    if (confirm('この請求書を発行しますか？')) {
+        router.post(route('invoices.issue', props.invoice.id));
     }
 };
 
-const reject = () => {
-    if (confirm('この請求書を却下しますか?')) {
-        router.post(route('invoices.reject', props.invoice.id));
+const cancelInvoice = () => {
+    if (confirm('この請求書をキャンセルしますか？')) {
+        router.post(route('invoices.cancel', props.invoice.id));
     }
 };
 
@@ -101,8 +115,8 @@ const deleteInvoice = () => {
     }
 };
 
-const createInvoice = () => {
-    router.get(route('invoices.create', { invoice_id: props.invoice.id }));
+const recordPayment = () => {
+    router.get(route('payments.create', { invoice_id: props.invoice.id }));
 };
 </script>
 
@@ -139,32 +153,32 @@ const createInvoice = () => {
                                 </span>
                             </div>
                             <div class="flex gap-2">
-                                <SecondaryButton
+                                <PrimaryButton
                                     v-if="invoice.status === 'draft'"
-                                    @click="approve"
+                                    @click="issueInvoice"
                                 >
-                                    承認
-                                </SecondaryButton>
-                                <SecondaryButton
-                                    v-if="['draft', 'sent'].includes(invoice.status)"
-                                    @click="reject"
-                                >
-                                    却下
-                                </SecondaryButton>
+                                    発行
+                                </PrimaryButton>
                                 <Link
-                                    v-if="['draft', 'sent'].includes(invoice.status)"
+                                    v-if="['draft', 'issued'].includes(invoice.status)"
                                     :href="route('invoices.edit', invoice.id)"
                                 >
-                                    <PrimaryButton>編集</PrimaryButton>
+                                    <SecondaryButton>編集</SecondaryButton>
                                 </Link>
                                 <PrimaryButton
-                                    v-if="invoice.status === 'approved' && invoice.invoices.length === 0"
-                                    @click="createInvoice"
+                                    v-if="['issued', 'partial_paid', 'overdue'].includes(invoice.status)"
+                                    @click="recordPayment"
                                 >
-                                    請求書を作成
+                                    入金記録
                                 </PrimaryButton>
+                                <SecondaryButton
+                                    v-if="['draft', 'issued'].includes(invoice.status)"
+                                    @click="cancelInvoice"
+                                >
+                                    キャンセル
+                                </SecondaryButton>
                                 <DangerButton
-                                    v-if="!(invoice.status === 'approved' && invoice.invoices.length > 0)"
+                                    v-if="invoice.payments.length === 0"
                                     @click="deleteInvoice"
                                 >
                                     削除
@@ -216,17 +230,27 @@ const createInvoice = () => {
                                             {{ formatDate(invoice.due_date) }}
                                         </dd>
                                     </div>
-                                    <div v-if="invoice.invoices.length > 0">
-                                        <dt class="text-gray-500 dark:text-gray-400">請求書</dt>
+                                    <div v-if="invoice.quotation">
+                                        <dt class="text-gray-500 dark:text-gray-400">見積書</dt>
                                         <dd>
                                             <Link
-                                                v-for="invoice in invoice.invoices"
-                                                :key="invoice.id"
-                                                :href="route('invoices.show', invoice.id)"
+                                                :href="route('quotations.show', invoice.quotation.id)"
                                                 class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400"
                                             >
-                                                {{ invoice.invoice_no }}
+                                                {{ invoice.quotation.quotation_no }}
                                             </Link>
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-gray-500 dark:text-gray-400">入金済額</dt>
+                                        <dd class="text-gray-900 dark:text-gray-100">
+                                            {{ formatCurrency(invoice.paid_amount) }}
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt class="text-gray-500 dark:text-gray-400">残高</dt>
+                                        <dd class="text-gray-900 dark:text-gray-100">
+                                            {{ formatCurrency(invoice.balance_due) }}
                                         </dd>
                                     </div>
                                 </dl>

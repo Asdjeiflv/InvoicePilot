@@ -54,6 +54,8 @@ const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('ja-JP', {
         style: 'currency',
         currency: 'JPY',
+        maximumFractionDigits: 0,
+        minimumFractionDigits: 0,
     }).format(amount);
 };
 
@@ -143,7 +145,7 @@ const submit = () => {
                                     v-model="form.amount"
                                     type="number"
                                     step="1"
-                                    min="0.01"
+                                    min="1"
                                     class="mt-1 block w-full"
                                     required
                                 />

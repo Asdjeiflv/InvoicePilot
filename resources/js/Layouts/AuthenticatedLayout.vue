@@ -39,6 +39,30 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Dashboard
                                 </NavLink>
+                                <NavLink
+                                    :href="route('clients.index')"
+                                    :active="route().current('clients.*')"
+                                >
+                                    取引先
+                                </NavLink>
+                                <NavLink
+                                    :href="route('quotations.index')"
+                                    :active="route().current('quotations.*')"
+                                >
+                                    見積
+                                </NavLink>
+                                <NavLink
+                                    :href="route('invoices.index')"
+                                    :active="route().current('invoices.*')"
+                                >
+                                    請求書
+                                </NavLink>
+                                <NavLink
+                                    :href="route('payments.index')"
+                                    :active="route().current('payments.*')"
+                                >
+                                    入金
+                                </NavLink>
                             </div>
                         </div>
 
@@ -145,6 +169,30 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('dashboard')"
                         >
                             Dashboard
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('clients.index')"
+                            :active="route().current('clients.*')"
+                        >
+                            取引先
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('quotations.index')"
+                            :active="route().current('quotations.*')"
+                        >
+                            見積
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('invoices.index')"
+                            :active="route().current('invoices.*')"
+                        >
+                            請求書
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('payments.index')"
+                            :active="route().current('payments.*')"
+                        >
+                            入金
                         </ResponsiveNavLink>
                     </div>
 

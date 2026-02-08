@@ -79,7 +79,7 @@ class PaymentController extends Controller
                 'method' => $request->method,
                 'reference_no' => $request->reference_no,
                 'note' => $request->note,
-                'recorded_by' => auth()->id(),
+                'created_by' => auth()->id(),
             ]);
 
             // Recalculate invoice balance

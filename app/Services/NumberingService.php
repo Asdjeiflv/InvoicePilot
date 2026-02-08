@@ -18,8 +18,9 @@ class NumberingService
         $prefix = "Q-{$year}-";
 
         return DB::transaction(function () use ($prefix, $year) {
-            // Get all quotations for this year with row lock
-            $quotations = Quotation::where('quotation_no', 'like', "{$prefix}%")
+            // Get all quotations for this year with row lock (including soft-deleted)
+            $quotations = Quotation::withTrashed()
+                ->where('quotation_no', 'like', "{$prefix}%")
                 ->lockForUpdate()
                 ->pluck('quotation_no');
 
@@ -37,9 +38,9 @@ class NumberingService
             $nextNumber = $maxNumber + 1;
             $quotationNo = $prefix . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
 
-            // Double check uniqueness (防御的プログラミング)
+            // Double check uniqueness (防御的プログラミング) - include soft-deleted
             $attempts = 0;
-            while (Quotation::where('quotation_no', $quotationNo)->exists() && $attempts < 10) {
+            while (Quotation::withTrashed()->where('quotation_no', $quotationNo)->exists() && $attempts < 10) {
                 $nextNumber++;
                 $quotationNo = $prefix . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
                 $attempts++;
@@ -63,8 +64,9 @@ class NumberingService
         $prefix = "I-{$year}-";
 
         return DB::transaction(function () use ($prefix, $year) {
-            // Get all invoices for this year with row lock
-            $invoices = Invoice::where('invoice_no', 'like', "{$prefix}%")
+            // Get all invoices for this year with row lock (including soft-deleted)
+            $invoices = Invoice::withTrashed()
+                ->where('invoice_no', 'like', "{$prefix}%")
                 ->lockForUpdate()
                 ->pluck('invoice_no');
 
@@ -82,9 +84,9 @@ class NumberingService
             $nextNumber = $maxNumber + 1;
             $invoiceNo = $prefix . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
 
-            // Double check uniqueness (防御的プログラミング)
+            // Double check uniqueness (防御的プログラミング) - include soft-deleted
             $attempts = 0;
-            while (Invoice::where('invoice_no', $invoiceNo)->exists() && $attempts < 10) {
+            while (Invoice::withTrashed()->where('invoice_no', $invoiceNo)->exists() && $attempts < 10) {
                 $nextNumber++;
                 $invoiceNo = $prefix . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
                 $attempts++;

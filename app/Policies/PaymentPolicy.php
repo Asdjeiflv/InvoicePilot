@@ -13,7 +13,8 @@ class PaymentPolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // All authenticated users can view payments
+        return true;
     }
 
     /**
@@ -21,7 +22,8 @@ class PaymentPolicy
      */
     public function view(User $user, Payment $payment): bool
     {
-        return false;
+        // All authenticated users can view payments
+        return true;
     }
 
     /**
@@ -29,7 +31,8 @@ class PaymentPolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // All authenticated users can create payments
+        return true;
     }
 
     /**
@@ -37,7 +40,8 @@ class PaymentPolicy
      */
     public function update(User $user, Payment $payment): bool
     {
-        return false;
+        // All authenticated users can update payments
+        return true;
     }
 
     /**
@@ -45,7 +49,8 @@ class PaymentPolicy
      */
     public function delete(User $user, Payment $payment): bool
     {
-        return false;
+        // All authenticated users can delete payments
+        return true;
     }
 
     /**
@@ -53,7 +58,8 @@ class PaymentPolicy
      */
     public function restore(User $user, Payment $payment): bool
     {
-        return false;
+        // All authenticated users can restore payments
+        return true;
     }
 
     /**
@@ -61,6 +67,7 @@ class PaymentPolicy
      */
     public function forceDelete(User $user, Payment $payment): bool
     {
-        return false;
+        // All authenticated users can force delete payments
+        return true;
     }
 }

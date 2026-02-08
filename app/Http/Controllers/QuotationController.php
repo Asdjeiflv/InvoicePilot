@@ -82,7 +82,7 @@ class QuotationController extends Controller
                 'quotation_no' => $quotationNo,
                 'client_id' => $request->client_id,
                 'issue_date' => $request->issue_date,
-                'expiry_date' => $request->expiry_date,
+                'valid_until' => $request->expiry_date,
                 'subtotal' => $subtotal,
                 'tax_total' => $taxTotal,
                 'total' => $subtotal + $taxTotal,

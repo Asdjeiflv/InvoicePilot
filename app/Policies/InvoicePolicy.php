@@ -13,7 +13,8 @@ class InvoicePolicy
      */
     public function viewAny(User $user): bool
     {
-        return false;
+        // All authenticated users can view invoices
+        return true;
     }
 
     /**
@@ -21,7 +22,8 @@ class InvoicePolicy
      */
     public function view(User $user, Invoice $invoice): bool
     {
-        return false;
+        // All authenticated users can view invoices
+        return true;
     }
 
     /**
@@ -29,7 +31,8 @@ class InvoicePolicy
      */
     public function create(User $user): bool
     {
-        return false;
+        // All authenticated users can create invoices
+        return true;
     }
 
     /**
@@ -37,7 +40,8 @@ class InvoicePolicy
      */
     public function update(User $user, Invoice $invoice): bool
     {
-        return false;
+        // All authenticated users can update invoices
+        return true;
     }
 
     /**
@@ -45,7 +49,8 @@ class InvoicePolicy
      */
     public function delete(User $user, Invoice $invoice): bool
     {
-        return false;
+        // All authenticated users can delete invoices
+        return true;
     }
 
     /**
@@ -53,7 +58,8 @@ class InvoicePolicy
      */
     public function restore(User $user, Invoice $invoice): bool
     {
-        return false;
+        // All authenticated users can restore invoices
+        return true;
     }
 
     /**
@@ -61,6 +67,7 @@ class InvoicePolicy
      */
     public function forceDelete(User $user, Invoice $invoice): bool
     {
-        return false;
+        // All authenticated users can force delete invoices
+        return true;
     }
 }
