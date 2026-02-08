@@ -215,6 +215,498 @@ Accounting: accounting@example.com
 Sales: sales@example.com
 ```
 
+**注意**: これらのテストユーザーは本番環境では自動作成されません。本番環境のセットアップについては「本番環境デプロイ」セクションを参照してください。
+
+## 🚀 本番環境デプロイ
+
+### 前提条件
+
+- PHP 8.2以上（php-fpm推奨）
+- Composer 2.x
+- Node.js 18以上
+- MySQL 8以上
+- Nginx または Apache
+- SSL証明書（Let's Encrypt推奨）
+- Redis（オプション、セッション/キャッシュ用）
+
+### 1. 環境変数設定
+
+```bash
+# .env.exampleをコピーして編集
+cp .env.example .env
+
+# 以下の項目を本番環境用に設定
+```
+
+**.env 重要な設定項目:**
+
+```bash
+# アプリケーション設定
+APP_NAME=InvoicePilot
+APP_ENV=production              # 本番環境では必ず "production"
+APP_KEY=                        # php artisan key:generate で生成
+APP_DEBUG=false                 # 本番環境では必ず false
+APP_TIMEZONE=Asia/Tokyo
+APP_URL=https://yourdomain.com  # 本番URLに変更
+
+# データベース設定
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=invoicepilot
+DB_USERNAME=your_db_user        # rootは使用しない
+DB_PASSWORD=strong_password     # 強力なパスワードを設定
+
+# セッション設定（本番環境）
+SESSION_DRIVER=redis            # redisまたはdatabase推奨
+SESSION_LIFETIME=120
+SESSION_SECURE_COOKIE=true      # HTTPS環境では必須
+SESSION_SAME_SITE=lax
+
+# キャッシュ設定（本番環境）
+CACHE_STORE=redis               # redis推奨（高速化）
+
+# Redis設定
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
+
+# メール設定（督促機能に必要）
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com        # 使用するSMTPサーバー
+MAIL_PORT=587
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=your-app-password # Gmailの場合はアプリパスワード
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="noreply@yourdomain.com"
+MAIL_FROM_NAME="${APP_NAME}"
+
+# ログ設定
+LOG_CHANNEL=stack
+LOG_STACK=daily                 # 日次ログローテーション
+LOG_LEVEL=warning               # warningまたはerror推奨
+
+# セキュリティ設定
+BCRYPT_ROUNDS=12                # 12以上推奨
+```
+
+### 2. 依存パッケージインストール
+
+```bash
+# Composer（本番環境最適化）
+composer install --optimize-autoloader --no-dev
+
+# Node.js（本番ビルド）
+npm install
+npm run build
+```
+
+### 3. アプリケーションキー生成
+
+```bash
+php artisan key:generate
+```
+
+### 4. データベース設定
+
+```bash
+# データベースユーザー作成（MySQL）
+mysql -u root -p
+```
+
+```sql
+-- 専用ユーザー作成（rootは使用しない）
+CREATE USER 'invoicepilot_user'@'localhost' IDENTIFIED BY 'strong_password_here';
+
+-- データベース作成
+CREATE DATABASE invoicepilot CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- 権限付与
+GRANT ALL PRIVILEGES ON invoicepilot.* TO 'invoicepilot_user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+```bash
+# マイグレーション実行（本番環境）
+php artisan migrate --force
+```
+
+**重要**: `php artisan db:seed` は実行しないでください。本番環境ではテストユーザーは作成されません。
+
+### 5. 初期管理者ユーザー作成
+
+```bash
+# Tinkerで手動作成
+php artisan tinker
+```
+
+```php
+// Tinker内で実行
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+
+User::factory()->admin()->create([
+    'name' => 'Your Name',
+    'email' => 'your@email.com',
+    'password' => Hash::make('your-secure-password-here'),
+]);
+
+// 複数の管理者を作成する場合
+User::factory()->accounting()->create([
+    'name' => 'Accounting User',
+    'email' => 'accounting@yourdomain.com',
+    'password' => Hash::make('another-secure-password'),
+]);
+
+exit
+```
+
+### 6. ストレージリンク作成
+
+```bash
+php artisan storage:link
+```
+
+### 7. パーミッション設定
+
+```bash
+# Laravelが書き込み可能なディレクトリ
+sudo chown -R www-data:www-data storage bootstrap/cache
+sudo chmod -R 775 storage bootstrap/cache
+
+# または、ユーザーグループに応じて
+sudo chown -R nginx:nginx storage bootstrap/cache
+```
+
+### 8. キャッシュ最適化
+
+```bash
+# 設定キャッシュ
+php artisan config:cache
+
+# ルートキャッシュ
+php artisan route:cache
+
+# ビューキャッシュ
+php artisan view:cache
+
+# イベントキャッシュ
+php artisan event:cache
+```
+
+### 9. Webサーバー設定
+
+#### Nginx設定例
+
+```nginx
+server {
+    listen 80;
+    listen [::]:80;
+    server_name yourdomain.com www.yourdomain.com;
+    return 301 https://$server_name$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+    server_name yourdomain.com www.yourdomain.com;
+
+    root /var/www/InvoicePilot/public;
+    index index.php index.html;
+
+    # SSL証明書
+    ssl_certificate /etc/letsencrypt/live/yourdomain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/yourdomain.com/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+
+    # セキュリティヘッダー
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "no-referrer-when-downgrade" always;
+
+    # CSPヘッダーはContentSecurityPolicyミドルウェアで設定されます
+
+    # アクセスログ
+    access_log /var/log/nginx/invoicepilot-access.log;
+    error_log /var/log/nginx/invoicepilot-error.log;
+
+    # 最大アップロードサイズ
+    client_max_body_size 10M;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        include fastcgi_params;
+
+        # タイムアウト設定
+        fastcgi_read_timeout 300;
+    }
+
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+
+    # 静的ファイルキャッシュ
+    location ~* \.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+}
+```
+
+#### Apache設定例 (.htaccess)
+
+```apache
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+```
+
+### 10. SSL証明書取得（Let's Encrypt）
+
+```bash
+# Certbot インストール
+sudo apt-get update
+sudo apt-get install certbot python3-certbot-nginx
+
+# 証明書取得（Nginx）
+sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
+
+# 自動更新設定確認
+sudo systemctl status certbot.timer
+```
+
+### 11. キューワーカー設定（督促メール用）
+
+```bash
+# Supervisorインストール
+sudo apt-get install supervisor
+
+# 設定ファイル作成
+sudo nano /etc/supervisor/conf.d/invoicepilot-worker.conf
+```
+
+```ini
+[program:invoicepilot-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/InvoicePilot/artisan queue:work --sleep=3 --tries=3 --max-time=3600
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=www-data
+numprocs=2
+redirect_stderr=true
+stdout_logfile=/var/www/InvoicePilot/storage/logs/worker.log
+stopwaitsecs=3600
+```
+
+```bash
+# Supervisor再読み込み
+sudo supervisorctl reread
+sudo supervisorctl update
+sudo supervisorctl start invoicepilot-worker:*
+
+# ワーカー状態確認
+sudo supervisorctl status
+```
+
+### 12. Cronジョブ設定（スケジュールタスク用）
+
+```bash
+# Crontab編集
+crontab -e
+```
+
+```cron
+# Laravel Scheduler
+* * * * * cd /var/www/InvoicePilot && php artisan schedule:run >> /dev/null 2>&1
+```
+
+### 13. デプロイ後の確認チェックリスト
+
+- [ ] `.env` ファイルの `APP_ENV=production` 設定確認
+- [ ] `.env` ファイルの `APP_DEBUG=false` 設定確認
+- [ ] `.env` ファイルの `APP_URL` を本番URLに設定
+- [ ] `APP_KEY` が生成されている
+- [ ] データベース接続確認（`php artisan migrate:status`）
+- [ ] 初期管理者ユーザー作成完了
+- [ ] ストレージディレクトリのパーミッション確認
+- [ ] SSL証明書が有効
+- [ ] メール送信テスト（督促機能テスト）
+- [ ] キューワーカーが稼働中（`supervisorctl status`）
+- [ ] Cronジョブが登録済み（`crontab -l`）
+- [ ] ログファイルが正しく書き込まれている
+- [ ] セッションが正常に動作（ログイン/ログアウトテスト）
+- [ ] CSPヘッダーが設定されている（開発者ツールで確認）
+
+### 14. セキュリティ強化（推奨）
+
+```bash
+# ファイアウォール設定（UFW）
+sudo ufw allow 22/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw enable
+
+# fail2ban設定（ブルートフォース対策）
+sudo apt-get install fail2ban
+sudo systemctl enable fail2ban
+sudo systemctl start fail2ban
+```
+
+**.env追加設定:**
+
+```bash
+# Rate Limiting（APIやログインの制限）
+# config/auth.php, routes/web.php で設定
+```
+
+### 15. バックアップ設定
+
+```bash
+# データベースバックアップスクリプト例
+nano /usr/local/bin/backup-invoicepilot.sh
+```
+
+```bash
+#!/bin/bash
+BACKUP_DIR="/var/backups/invoicepilot"
+DATE=$(date +%Y%m%d_%H%M%S)
+DB_NAME="invoicepilot"
+DB_USER="invoicepilot_user"
+DB_PASS="your_password"
+
+# ディレクトリ作成
+mkdir -p $BACKUP_DIR
+
+# データベースバックアップ
+mysqldump -u $DB_USER -p$DB_PASS $DB_NAME | gzip > $BACKUP_DIR/db_$DATE.sql.gz
+
+# ストレージディレクトリバックアップ
+tar -czf $BACKUP_DIR/storage_$DATE.tar.gz /var/www/InvoicePilot/storage
+
+# 7日以上前のバックアップ削除
+find $BACKUP_DIR -type f -mtime +7 -delete
+
+echo "Backup completed: $DATE"
+```
+
+```bash
+# 実行権限付与
+chmod +x /usr/local/bin/backup-invoicepilot.sh
+
+# Crontab追加（毎日午前3時にバックアップ）
+crontab -e
+```
+
+```cron
+0 3 * * * /usr/local/bin/backup-invoicepilot.sh >> /var/log/invoicepilot-backup.log 2>&1
+```
+
+### 16. 更新時の手順
+
+```bash
+# コード更新後
+cd /var/www/InvoicePilot
+
+# メンテナンスモード有効化
+php artisan down
+
+# Git pull（または新しいコードをデプロイ）
+git pull origin main
+
+# Composer更新
+composer install --optimize-autoloader --no-dev
+
+# NPM更新とビルド
+npm install
+npm run build
+
+# マイグレーション実行
+php artisan migrate --force
+
+# キャッシュクリア
+php artisan config:clear
+php artisan route:clear
+php artisan view:clear
+php artisan cache:clear
+
+# キャッシュ再生成
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# キューワーカー再起動
+sudo supervisorctl restart invoicepilot-worker:*
+
+# メンテナンスモード解除
+php artisan up
+```
+
+### トラブルシューティング
+
+#### 問題: "500 Internal Server Error"
+
+```bash
+# ログ確認
+tail -f storage/logs/laravel.log
+
+# パーミッション確認
+ls -la storage bootstrap/cache
+
+# キャッシュクリア
+php artisan cache:clear
+php artisan config:clear
+```
+
+#### 問題: CSPエラー（ブラウザコンソール）
+
+本番環境では `ContentSecurityPolicy` ミドルウェアが自動的に厳格なCSPを設定します。開発環境とは異なり、`unsafe-eval` や `unsafe-inline` は許可されません。
+
+#### 問題: メール送信失敗
+
+```bash
+# メール設定テスト
+php artisan tinker
+```
+
+```php
+Mail::raw('Test email', function ($message) {
+    $message->to('test@example.com')->subject('Test');
+});
+```
+
+```bash
+# ログ確認
+tail -f storage/logs/laravel.log
+```
+
+### パフォーマンス最適化
+
+```bash
+# OPcache有効化（php.ini）
+opcache.enable=1
+opcache.memory_consumption=256
+opcache.max_accelerated_files=20000
+opcache.validate_timestamps=0  # 本番環境のみ
+
+# Redis設定
+# config/database.php でRedis設定確認
+
+# データベースインデックス最適化
+php artisan db:show
+```
+
 ## 🧪 テスト実行
 
 ```bash
