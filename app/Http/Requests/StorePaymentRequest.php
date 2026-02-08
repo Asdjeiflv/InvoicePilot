@@ -12,6 +12,29 @@ class StorePaymentRequest extends FormRequest
         return true; // Authorization handled by Policy
     }
 
+    protected function prepareForValidation(): void
+    {
+        $sanitized = [];
+
+        // Sanitize string fields
+        foreach (['method', 'reference_no', 'note'] as $field) {
+            if ($this->has($field) && is_string($this->input($field))) {
+                $sanitized[$field] = trim($this->input($field));
+            }
+        }
+
+        // Ensure numeric/integer fields
+        if ($this->has('invoice_id')) {
+            $sanitized['invoice_id'] = (int) $this->input('invoice_id');
+        }
+
+        if ($this->has('amount')) {
+            $sanitized['amount'] = (float) $this->input('amount');
+        }
+
+        $this->merge($sanitized);
+    }
+
     public function rules(): array
     {
         return [

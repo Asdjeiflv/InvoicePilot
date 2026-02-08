@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreInvoiceRequest extends FormRequest
+class StoreQuotationRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -58,7 +58,7 @@ class StoreInvoiceRequest extends FormRequest
                 'required',
                 'date',
             ],
-            'due_date' => [
+            'expiry_date' => [
                 'required',
                 'date',
                 'after_or_equal:issue_date',
@@ -104,9 +104,9 @@ class StoreInvoiceRequest extends FormRequest
             'client_id.exists' => '指定された取引先が存在しません',
             'issue_date.required' => '発行日を入力してください',
             'issue_date.date' => '有効な日付を入力してください',
-            'due_date.required' => '支払期限を入力してください',
-            'due_date.date' => '有効な日付を入力してください',
-            'due_date.after_or_equal' => '支払期限は発行日以降の日付を指定してください',
+            'expiry_date.required' => '有効期限を入力してください',
+            'expiry_date.date' => '有効な日付を入力してください',
+            'expiry_date.after_or_equal' => '有効期限は発行日以降の日付を指定してください',
             'items.required' => '明細行を追加してください',
             'items.min' => '少なくとも1つの明細行が必要です',
             'items.*.description.required' => '商品・サービスの説明を入力してください',
