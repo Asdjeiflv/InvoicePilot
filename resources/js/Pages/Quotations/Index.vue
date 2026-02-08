@@ -5,6 +5,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import TextInput from '@/Components/TextInput.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import { debounce } from 'lodash';
+import { formatCurrency } from '@/utils/currency';
+import { formatDate } from '@/utils/date';
 
 interface Client {
     id: number;
@@ -98,19 +100,6 @@ const searchQuotations = debounce(() => {
 watch([search, status, perPage], () => {
     searchQuotations();
 });
-
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ja-JP', {
-        style: 'currency',
-        currency: 'JPY',
-        maximumFractionDigits: 0,
-        minimumFractionDigits: 0,
-    }).format(amount);
-};
-
-const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('ja-JP');
-};
 </script>
 
 <template>

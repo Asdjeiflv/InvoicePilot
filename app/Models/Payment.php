@@ -30,13 +30,24 @@ class Payment extends Model
         return $this->belongsTo(Invoice::class);
     }
 
+    /**
+     * Get the user who created this payment.
+     *
+     * @return BelongsTo
+     */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /**
+     * Get the user who recorded this payment.
+     * This is an alias for creator() for backwards compatibility with frontend.
+     *
+     * @return BelongsTo
+     */
     public function recordedBy(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'created_by');
+        return $this->creator();
     }
 }

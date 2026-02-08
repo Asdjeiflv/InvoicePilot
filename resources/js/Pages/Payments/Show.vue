@@ -4,6 +4,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import DangerButton from '@/Components/DangerButton.vue';
+import { formatCurrency } from '@/utils/currency';
+import { formatDate, formatDateTime } from '@/utils/date';
 
 interface Client {
     id: number;
@@ -49,23 +51,6 @@ const methodLabel = (method: string) => {
         other: 'その他',
     };
     return labels[method] || method;
-};
-
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ja-JP', {
-        style: 'currency',
-        currency: 'JPY',
-        maximumFractionDigits: 0,
-        minimumFractionDigits: 0,
-    }).format(amount);
-};
-
-const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('ja-JP');
-};
-
-const formatDateTime = (date: string) => {
-    return new Date(date).toLocaleString('ja-JP');
 };
 
 const deletePayment = () => {

@@ -7,6 +7,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import { formatCurrency } from '@/utils/currency';
 
 interface Client {
     id: number;
@@ -49,15 +50,6 @@ const form = useForm({
 const selectedInvoice = computed(() => {
     return props.payment.invoice;
 });
-
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ja-JP', {
-        style: 'currency',
-        currency: 'JPY',
-        maximumFractionDigits: 0,
-        minimumFractionDigits: 0,
-    }).format(amount);
-};
 
 const updateAmountToBalance = () => {
     if (selectedInvoice.value) {

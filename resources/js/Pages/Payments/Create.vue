@@ -7,6 +7,7 @@ import InputLabel from '@/Components/InputLabel.vue';
 import InputError from '@/Components/InputError.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import { formatCurrency } from '@/utils/currency';
 
 interface Client {
     id: number;
@@ -41,15 +42,6 @@ const selectedInvoice = computed(() => {
     if (!form.invoice_id) return null;
     return props.invoices.find(inv => inv.id === form.invoice_id) || null;
 });
-
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ja-JP', {
-        style: 'currency',
-        currency: 'JPY',
-        maximumFractionDigits: 0,
-        minimumFractionDigits: 0,
-    }).format(amount);
-};
 
 const updateAmountToBalance = () => {
     if (selectedInvoice.value) {

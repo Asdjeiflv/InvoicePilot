@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Exceptions\NumberGenerationException;
 use App\Models\Invoice;
 use App\Models\Quotation;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class NumberingService
 {
@@ -47,7 +49,15 @@ class NumberingService
             }
 
             if ($attempts >= 10) {
-                throw new \RuntimeException('見積番号の生成に失敗しました（10回試行後）');
+                Log::error('Quotation number generation failed', [
+                    'prefix' => $prefix,
+                    'year' => $year,
+                    'attempts' => $attempts,
+                    'existing_count' => $quotations->count(),
+                    'last_attempted' => $quotationNo,
+                ]);
+
+                throw NumberGenerationException::failedAfterAttempts('見積', $prefix, $attempts);
             }
 
             return $quotationNo;
@@ -93,7 +103,15 @@ class NumberingService
             }
 
             if ($attempts >= 10) {
-                throw new \RuntimeException('請求番号の生成に失敗しました（10回試行後）');
+                Log::error('Invoice number generation failed', [
+                    'prefix' => $prefix,
+                    'year' => $year,
+                    'attempts' => $attempts,
+                    'existing_count' => $invoices->count(),
+                    'last_attempted' => $invoiceNo,
+                ]);
+
+                throw NumberGenerationException::failedAfterAttempts('請求', $prefix, $attempts);
             }
 
             return $invoiceNo;

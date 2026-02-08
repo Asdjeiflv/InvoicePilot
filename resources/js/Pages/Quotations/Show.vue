@@ -4,6 +4,8 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import DangerButton from '@/Components/DangerButton.vue';
+import { formatCurrency } from '@/utils/currency';
+import { formatDate } from '@/utils/date';
 
 interface Client {
     id: number;
@@ -70,19 +72,6 @@ const statusLabel = (status: string) => {
         expired: '期限切れ',
     };
     return labels[status] || status;
-};
-
-const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('ja-JP', {
-        style: 'currency',
-        currency: 'JPY',
-        maximumFractionDigits: 0,
-        minimumFractionDigits: 0,
-    }).format(amount);
-};
-
-const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('ja-JP');
 };
 
 const approve = () => {
