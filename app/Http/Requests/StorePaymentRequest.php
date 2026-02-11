@@ -89,6 +89,11 @@ class StorePaymentRequest extends FormRequest
                 'string',
                 'max:1000',
             ],
+            'version' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
         ];
     }
 

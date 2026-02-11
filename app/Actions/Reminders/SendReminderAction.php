@@ -33,6 +33,21 @@ class SendReminderAction
             throw new \InvalidArgumentException("Invalid reminder type: {type}");
         }
 
+        // Check for recent reminder (within 7 days)
+        $recentReminder = $invoice->reminders()
+            ->where('sent_at', '>=', now()->subDays(7))
+            ->latest('sent_at')
+            ->first();
+
+        if ($recentReminder) {
+            throw new \RuntimeException(
+                sprintf(
+                    'A reminder was already sent on %s. Please wait at least 7 days before sending another reminder.',
+                    $recentReminder->sent_at->format('Y-m-d H:i:s')
+                )
+            );
+        }
+
         $template = self::TEMPLATES[$type];
         $subject = $this->replaceVariables($template['subject'], $invoice);
         $body = $this->replaceVariables($template['body'], $invoice);

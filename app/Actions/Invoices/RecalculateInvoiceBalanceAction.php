@@ -28,6 +28,13 @@ class RecalculateInvoiceBalanceAction
                 $invoice->status = 'paid';
             } elseif ($totalPaid > 0 && $totalPaid < $invoice->total) {
                 $invoice->status = 'partial_paid';
+            } elseif ($totalPaid == 0 && $invoice->balance_due > 0) {
+                // No payments, revert to issued or overdue based on due date
+                if ($invoice->due_date && $invoice->due_date->isPast()) {
+                    $invoice->status = 'overdue';
+                } else {
+                    $invoice->status = 'issued';
+                }
             } elseif ($invoice->due_date && $invoice->due_date->isPast() && $invoice->balance_due > 0) {
                 // Only set to overdue if there's an unpaid balance and past due date
                 $invoice->status = 'overdue';

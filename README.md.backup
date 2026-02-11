@@ -1,16 +1,3 @@
----
-> **🎉 商用導入品質改善完了！品質スコア 8.5/10 達成**
-> 
-> InvoicePilot は商用導入可能な品質レベルに到達しました。
-> 
-> **📚 新しいドキュメント体系**:
-> - **[INDEX.md](INDEX.md)** - 📑 全ドキュメント一覧（まずここから！）
-> - **[QUICKSTART.md](QUICKSTART.md)** - ⚡ 5分で起動ガイド
-> - **[COMPLETION_REPORT.md](COMPLETION_REPORT.md)** - 📊 完了報告書
-> 
-> **🚀 即座に実行**: `./scripts/setup_project.sh`
----
-
 # BillingFlow - 請求管理SaaS
 
 Laravel 11 + Vue3 + Inertia + TypeScript + MySQLで構築された、見積・請求・入金・督促を一気通貫で管理する請求管理システムです。

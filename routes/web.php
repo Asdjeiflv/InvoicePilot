@@ -47,3 +47,14 @@ Route::middleware(['auth', 'throttle:60,1'])->group(function () {
 });
 
 require __DIR__.'/auth.php';
+
+// Accounting Export
+Route::middleware(['auth', 'throttle:60,1'])->prefix('accounting')->group(function () {
+    Route::get('/export/freee', [\App\Http\Controllers\AccountingExportController::class, 'exportFreee'])
+        ->name('accounting.export.freee')
+        ->middleware('can:view-reports');
+    
+    Route::get('/export/moneyforward', [\App\Http\Controllers\AccountingExportController::class, 'exportMoneyForward'])
+        ->name('accounting.export.moneyforward')
+        ->middleware('can:view-reports');
+});

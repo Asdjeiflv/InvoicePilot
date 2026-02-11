@@ -51,14 +51,7 @@ class UpdateInvoiceRequest extends FormRequest
     {
         $invoice = $this->route('invoice');
 
-        // Prevent editing of paid or canceled invoices
-        if ($invoice && in_array($invoice->status, ['paid', 'canceled'])) {
-            return [
-                'status' => 'prohibited',
-            ];
-        }
-
-        return [
+        $rules = [
             'client_id' => [
                 'required',
                 'integer',
@@ -104,7 +97,21 @@ class UpdateInvoiceRequest extends FormRequest
                 'string',
                 'max:2000',
             ],
+            'version' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
         ];
+
+        // Prevent editing of paid or canceled invoices
+        if ($invoice && in_array($invoice->status, ['paid', 'canceled'])) {
+            $rules['client_id'][] = function ($attribute, $value, $fail) {
+                $fail('支払済みまたはキャンセル済みの請求書は編集できません');
+            };
+        }
+
+        return $rules;
     }
 
     public function messages(): array

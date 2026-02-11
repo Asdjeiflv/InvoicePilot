@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Invoices\RecalculateInvoiceBalanceAction;
+use App\Exceptions\StaleObjectException;
 use App\Http\Requests\StorePaymentRequest;
 use App\Models\Invoice;
 use App\Models\Payment;
@@ -112,21 +113,30 @@ class PaymentController extends Controller
 
     public function update(StorePaymentRequest $request, Payment $payment)
     {
-        DB::transaction(function () use ($request, $payment) {
-            $payment->update([
-                'payment_date' => $request->payment_date,
-                'amount' => $request->amount,
-                'method' => $request->method,
-                'reference_no' => $request->reference_no,
-                'note' => $request->note,
-            ]);
+        try {
+            DB::transaction(function () use ($request, $payment) {
+                // Check optimistic lock version
+                $payment->checkVersion($request->input('version'));
 
-            // Recalculate invoice balance
-            $this->recalculateBalanceAction->execute($payment->invoice);
-        });
+                $payment->update([
+                    'payment_date' => $request->payment_date,
+                    'amount' => $request->amount,
+                    'method' => $request->method,
+                    'reference_no' => $request->reference_no,
+                    'note' => $request->note,
+                ]);
 
-        return redirect()->route('invoices.show', $payment->invoice_id)
-            ->with('success', '入金情報を更新しました');
+                // Recalculate invoice balance
+                $this->recalculateBalanceAction->execute($payment->invoice);
+            });
+
+            return redirect()->route('invoices.show', $payment->invoice_id)
+                ->with('success', '入金情報を更新しました');
+        } catch (StaleObjectException $e) {
+            return back()
+                ->withInput()
+                ->with('error', '別のユーザーによって入金情報が更新されています。ページを再読み込みして最新の情報を確認してください。');
+        }
     }
 
     public function destroy(Payment $payment)

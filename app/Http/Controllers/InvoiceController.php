@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Invoices\CreateInvoiceFromQuotationAction;
+use App\Exceptions\StaleObjectException;
 use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Requests\UpdateInvoiceRequest;
 use App\Models\Client;
@@ -159,50 +160,59 @@ class InvoiceController extends Controller
 
     public function update(UpdateInvoiceRequest $request, Invoice $invoice)
     {
-        DB::transaction(function () use ($request, $invoice) {
-            // Calculate totals
-            $subtotal = 0;
-            $taxTotal = 0;
+        try {
+            DB::transaction(function () use ($request, $invoice) {
+                // Check optimistic lock version
+                $invoice->checkVersion($request->input('version'));
 
-            foreach ($request->items as $item) {
-                $lineTotal = $item['quantity'] * $item['unit_price'];
-                $lineTax = $lineTotal * ($item['tax_rate'] / 100);
-                $subtotal += $lineTotal;
-                $taxTotal += $lineTax;
-            }
+                // Calculate totals
+                $subtotal = 0;
+                $taxTotal = 0;
 
-            $total = $subtotal + $taxTotal;
+                foreach ($request->items as $item) {
+                    $lineTotal = $item['quantity'] * $item['unit_price'];
+                    $lineTax = $lineTotal * ($item['tax_rate'] / 100);
+                    $subtotal += $lineTotal;
+                    $taxTotal += $lineTax;
+                }
 
-            // Update invoice
-            $invoice->update([
-                'client_id' => $request->client_id,
-                'issue_date' => $request->issue_date,
-                'due_date' => $request->due_date,
-                'subtotal' => $subtotal,
-                'tax_total' => $taxTotal,
-                'total' => $total,
-                'balance_due' => $total - $invoice->paid_amount,
-                'notes' => $request->notes,
-            ]);
+                $total = $subtotal + $taxTotal;
 
-            // Delete existing items and recreate
-            $invoice->items()->delete();
-
-            foreach ($request->items as $item) {
-                $lineTotal = $item['quantity'] * $item['unit_price'];
-
-                $invoice->items()->create([
-                    'description' => $item['description'],
-                    'quantity' => $item['quantity'],
-                    'unit_price' => $item['unit_price'],
-                    'tax_rate' => $item['tax_rate'],
-                    'line_total' => $lineTotal,
+                // Update invoice
+                $invoice->update([
+                    'client_id' => $request->client_id,
+                    'issue_date' => $request->issue_date,
+                    'due_date' => $request->due_date,
+                    'subtotal' => $subtotal,
+                    'tax_total' => $taxTotal,
+                    'total' => $total,
+                    'balance_due' => $total - $invoice->paid_amount,
+                    'notes' => $request->notes,
                 ]);
-            }
-        });
 
-        return redirect()->route('invoices.show', $invoice)
-            ->with('success', '請求書を更新しました');
+                // Delete existing items and recreate
+                $invoice->items()->delete();
+
+                foreach ($request->items as $item) {
+                    $lineTotal = $item['quantity'] * $item['unit_price'];
+
+                    $invoice->items()->create([
+                        'description' => $item['description'],
+                        'quantity' => $item['quantity'],
+                        'unit_price' => $item['unit_price'],
+                        'tax_rate' => $item['tax_rate'],
+                        'line_total' => $lineTotal,
+                    ]);
+                }
+            });
+
+            return redirect()->route('invoices.show', $invoice)
+                ->with('success', '請求書を更新しました');
+        } catch (StaleObjectException $e) {
+            return back()
+                ->withInput()
+                ->with('error', '別のユーザーによって請求書が更新されています。ページを再読み込みして最新の情報を確認してください。');
+        }
     }
 
     public function destroy(Invoice $invoice)

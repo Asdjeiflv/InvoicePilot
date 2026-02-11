@@ -31,8 +31,8 @@ class QuotationPolicy
      */
     public function create(User $user): bool
     {
-        // All authenticated users can create quotations
-        return true;
+        // Only admin and sales can create quotations
+        return $user->hasAnyRole(['admin', 'sales']);
     }
 
     /**
@@ -40,8 +40,22 @@ class QuotationPolicy
      */
     public function update(User $user, Quotation $quotation): bool
     {
-        // All authenticated users can update quotations
-        return true;
+        // Auditors cannot update
+        if ($user->isAuditor()) {
+            return false;
+        }
+
+        // Admin can always update
+        if ($user->isAdmin()) {
+            return true;
+        }
+
+        // Sales can only update draft quotations
+        if ($user->isSales() && $quotation->status === 'draft') {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -49,8 +63,8 @@ class QuotationPolicy
      */
     public function delete(User $user, Quotation $quotation): bool
     {
-        // All authenticated users can delete quotations
-        return true;
+        // Only admin can delete, and only draft quotations
+        return $user->isAdmin() && $quotation->status === 'draft';
     }
 
     /**
@@ -58,8 +72,8 @@ class QuotationPolicy
      */
     public function restore(User $user, Quotation $quotation): bool
     {
-        // All authenticated users can restore quotations
-        return true;
+        // Only admin can restore
+        return $user->isAdmin();
     }
 
     /**
@@ -67,7 +81,26 @@ class QuotationPolicy
      */
     public function forceDelete(User $user, Quotation $quotation): bool
     {
-        // All authenticated users can force delete quotations
-        return true;
+        // Only admin can force delete
+        return $user->isAdmin();
+    }
+
+    /**
+     * Determine whether the user can approve a quotation.
+     */
+    public function approve(User $user, Quotation $quotation): bool
+    {
+        // Only admin can approve
+        // Quotation must be in draft or submitted status
+        return $user->isAdmin() && in_array($quotation->status, ['draft', 'submitted']);
+    }
+
+    /**
+     * Determine whether the user can reject a quotation.
+     */
+    public function reject(User $user, Quotation $quotation): bool
+    {
+        // Only admin can reject
+        return $user->isAdmin();
     }
 }

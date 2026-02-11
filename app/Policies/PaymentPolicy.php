@@ -31,8 +31,8 @@ class PaymentPolicy
      */
     public function create(User $user): bool
     {
-        // All authenticated users can create payments
-        return true;
+        // Only admin and accounting can create payments
+        return $user->hasAnyRole(['admin', 'accounting']);
     }
 
     /**
@@ -40,8 +40,9 @@ class PaymentPolicy
      */
     public function update(User $user, Payment $payment): bool
     {
-        // All authenticated users can update payments
-        return true;
+        // Only admin and accounting can update payments
+        // Auditors cannot update
+        return $user->hasAnyRole(['admin', 'accounting']);
     }
 
     /**
@@ -49,8 +50,8 @@ class PaymentPolicy
      */
     public function delete(User $user, Payment $payment): bool
     {
-        // All authenticated users can delete payments
-        return true;
+        // Only admin can delete payments
+        return $user->isAdmin();
     }
 
     /**
@@ -58,8 +59,8 @@ class PaymentPolicy
      */
     public function restore(User $user, Payment $payment): bool
     {
-        // All authenticated users can restore payments
-        return true;
+        // Only admin can restore
+        return $user->isAdmin();
     }
 
     /**
@@ -67,7 +68,7 @@ class PaymentPolicy
      */
     public function forceDelete(User $user, Payment $payment): bool
     {
-        // All authenticated users can force delete payments
-        return true;
+        // Only admin can force delete
+        return $user->isAdmin();
     }
 }

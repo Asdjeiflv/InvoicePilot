@@ -72,6 +72,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is auditor (read-only access)
+     */
+    public function isAuditor(): bool
+    {
+        return $this->role === 'auditor';
+    }
+
+    /**
      * Check if user has specific role
      */
     public function hasRole(string $role): bool

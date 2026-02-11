@@ -3,7 +3,13 @@
 namespace App\Providers;
 
 use App\Models\Client;
+use App\Models\Invoice;
+use App\Models\Payment;
+use App\Models\Quotation;
 use App\Observers\ClientObserver;
+use App\Observers\InvoiceObserver;
+use App\Observers\PaymentObserver;
+use App\Observers\QuotationObserver;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
@@ -27,6 +33,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Register observers
         Client::observe(ClientObserver::class);
+        Invoice::observe(InvoiceObserver::class);
+        Payment::observe(PaymentObserver::class);
+        Quotation::observe(QuotationObserver::class);
 
         // Define role-based gates
         Gate::define('admin', function ($user) {

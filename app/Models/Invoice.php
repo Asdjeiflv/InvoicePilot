@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasOptimisticLock;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +12,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Invoice extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, HasOptimisticLock, SoftDeletes;
 
     protected $fillable = [
         'invoice_no',
@@ -27,6 +28,7 @@ class Invoice extends Model
         'status',
         'sent_at',
         'created_by',
+        'version',
     ];
 
     protected $casts = [
