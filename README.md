@@ -1,4 +1,4 @@
-# InvoicePilot - エンタープライズ請求管理システム
+# InvoicePilot - 請求管理SaaS
 
 Laravel 11 + Vue3 + Inertia + TypeScript + MySQLで構築された、見積・請求・入金・督促を一気通貫で管理する商用グレードの請求管理システムです。
 
