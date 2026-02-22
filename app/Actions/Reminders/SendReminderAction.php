@@ -34,6 +34,7 @@ class SendReminderAction
         }
 
         // Check for recent reminder (within 7 days)
+        /** @var Reminder|null $recentReminder */
         $recentReminder = $invoice->reminders()
             ->where('sent_at', '>=', now()->subDays(7))
             ->latest('sent_at')
@@ -79,9 +80,9 @@ class SendReminderAction
             [
                 $invoice->invoice_no,
                 $invoice->client->company_name,
-                number_format($invoice->total, 2),
+                number_format((float) $invoice->total, 2),
                 $invoice->due_date->format('Y-m-d'),
-                number_format($invoice->balance_due, 2),
+                number_format((float) $invoice->balance_due, 2),
             ],
             $template
         );

@@ -2,15 +2,21 @@ includes:
     - vendor/larastan/larastan/extension.neon
 
 parameters:
-    level: 5
+    level: 6
     paths:
         - app
     excludePaths:
-        - app/Console/Kernel.php
-        - app/Exceptions/Handler.php
-    checkMissingIterableValueType: false
-    checkGenericClassInNonGenericObjectType: false
+        analyseAndScan:
+            - app/Console/Kernel.php (?)
+            - app/Exceptions/Handler.php (?)
     ignoreErrors:
         - '#Unsafe usage of new static#'
+        - '#Call to an undefined method Illuminate\\\\Database\\\\Eloquent\\\\Model::trashed\\(\\)#'
+        - '#Access to an undefined property Illuminate\\\\Database\\\\Eloquent\\\\Model::\\$#'
+        - '#Comparison operation#'
+        - '#Left side of && is always true#'
+        - '#Right side of && is always true#'
+        - '#isset\\(\\) always exists and is not nullable#'
+        - '#no value type specified in iterable type array#'
     bootstrapFiles:
         - vendor/autoload.php

@@ -38,13 +38,13 @@ class NumberingService
             }
 
             $nextNumber = $maxNumber + 1;
-            $quotationNo = $prefix . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+            $quotationNo = $prefix . str_pad((string) $nextNumber, 5, '0', STR_PAD_LEFT);
 
             // Double check uniqueness (防御的プログラミング) - include soft-deleted
             $attempts = 0;
             while (Quotation::withTrashed()->where('quotation_no', $quotationNo)->exists() && $attempts < 10) {
                 $nextNumber++;
-                $quotationNo = $prefix . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+                $quotationNo = $prefix . str_pad((string) $nextNumber, 5, '0', STR_PAD_LEFT);
                 $attempts++;
             }
 
@@ -92,13 +92,13 @@ class NumberingService
             }
 
             $nextNumber = $maxNumber + 1;
-            $invoiceNo = $prefix . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+            $invoiceNo = $prefix . str_pad((string) $nextNumber, 5, '0', STR_PAD_LEFT);
 
             // Double check uniqueness (防御的プログラミング) - include soft-deleted
             $attempts = 0;
             while (Invoice::withTrashed()->where('invoice_no', $invoiceNo)->exists() && $attempts < 10) {
                 $nextNumber++;
-                $invoiceNo = $prefix . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+                $invoiceNo = $prefix . str_pad((string) $nextNumber, 5, '0', STR_PAD_LEFT);
                 $attempts++;
             }
 

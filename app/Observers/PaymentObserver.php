@@ -64,7 +64,7 @@ class PaymentObserver
                 'target_id' => $payment->id,
                 'before_json' => $before ? json_encode($before, JSON_UNESCAPED_UNICODE) : null,
                 'after_json' => $after ? json_encode($after, JSON_UNESCAPED_UNICODE) : null,
-                'ip_address' => request()?->ip(),
+                'ip_address' => request()->ip(),
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to create audit log for Payment', [

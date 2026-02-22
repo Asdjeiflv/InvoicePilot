@@ -10,9 +10,11 @@ use App\Models\Client;
 use App\Models\Invoice;
 use App\Models\Quotation;
 use App\Services\NumberingService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 class InvoiceController extends Controller
 {
@@ -23,7 +25,7 @@ class InvoiceController extends Controller
         $this->authorizeResource(Invoice::class, 'invoice');
     }
 
-    public function index(Request $request)
+    public function index(Request $request): InertiaResponse
     {
         $query = Invoice::with(['client:id,code,company_name'])
             ->when($request->search, function ($q, $search) {
@@ -56,7 +58,7 @@ class InvoiceController extends Controller
         ]);
     }
 
-    public function create(Request $request)
+    public function create(Request $request): InertiaResponse
     {
         $clients = Client::select('id', 'code', 'company_name')
             ->orderBy('code')
@@ -73,7 +75,7 @@ class InvoiceController extends Controller
         ]);
     }
 
-    public function store(StoreInvoiceRequest $request)
+    public function store(StoreInvoiceRequest $request): RedirectResponse
     {
         $invoice = DB::transaction(function () use ($request) {
             // Generate invoice number
@@ -129,7 +131,7 @@ class InvoiceController extends Controller
             ->with('success', '請求書を作成しました');
     }
 
-    public function show(Invoice $invoice)
+    public function show(Invoice $invoice): InertiaResponse
     {
         $invoice->load(['client', 'items', 'payments', 'quotation', 'reminders']);
 
@@ -138,7 +140,7 @@ class InvoiceController extends Controller
         ]);
     }
 
-    public function edit(Invoice $invoice)
+    public function edit(Invoice $invoice): InertiaResponse|RedirectResponse
     {
         // Prevent editing of paid or canceled invoices
         if (in_array($invoice->status, ['paid', 'canceled'])) {
@@ -158,7 +160,7 @@ class InvoiceController extends Controller
         ]);
     }
 
-    public function update(UpdateInvoiceRequest $request, Invoice $invoice)
+    public function update(UpdateInvoiceRequest $request, Invoice $invoice): RedirectResponse
     {
         try {
             DB::transaction(function () use ($request, $invoice) {
@@ -215,7 +217,7 @@ class InvoiceController extends Controller
         }
     }
 
-    public function destroy(Invoice $invoice)
+    public function destroy(Invoice $invoice): RedirectResponse
     {
         // Prevent deletion of invoices with payments
         if ($invoice->payments()->exists()) {
@@ -232,7 +234,7 @@ class InvoiceController extends Controller
     /**
      * Issue an invoice (change status from draft to issued)
      */
-    public function issue(Invoice $invoice)
+    public function issue(Invoice $invoice): RedirectResponse
     {
         $this->authorize('update', $invoice);
 
@@ -248,7 +250,7 @@ class InvoiceController extends Controller
     /**
      * Cancel an invoice
      */
-    public function cancel(Invoice $invoice)
+    public function cancel(Invoice $invoice): RedirectResponse
     {
         $this->authorize('update', $invoice);
 
@@ -264,7 +266,7 @@ class InvoiceController extends Controller
     /**
      * Create invoice from quotation
      */
-    public function createFromQuotation(Request $request)
+    public function createFromQuotation(Request $request): RedirectResponse
     {
         $this->authorize('create', Invoice::class);
 

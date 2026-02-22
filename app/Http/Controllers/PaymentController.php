@@ -7,9 +7,11 @@ use App\Exceptions\StaleObjectException;
 use App\Http\Requests\StorePaymentRequest;
 use App\Models\Invoice;
 use App\Models\Payment;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 class PaymentController extends Controller
 {
@@ -19,7 +21,7 @@ class PaymentController extends Controller
         $this->authorizeResource(Payment::class, 'payment');
     }
 
-    public function index(Request $request)
+    public function index(Request $request): InertiaResponse
     {
         $query = Payment::with(['invoice:id,invoice_no,client_id', 'invoice.client:id,code,company_name'])
             ->when($request->search, function ($q, $search) {
@@ -48,7 +50,7 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function create(Request $request)
+    public function create(Request $request): InertiaResponse
     {
         $invoice = null;
         if ($request->invoice_id) {
@@ -67,7 +69,7 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function store(StorePaymentRequest $request)
+    public function store(StorePaymentRequest $request): RedirectResponse
     {
         $payment = DB::transaction(function () use ($request) {
             $invoice = Invoice::findOrFail($request->invoice_id);
@@ -93,7 +95,7 @@ class PaymentController extends Controller
             ->with('success', '入金を記録しました');
     }
 
-    public function show(Payment $payment)
+    public function show(Payment $payment): InertiaResponse
     {
         $payment->load(['invoice.client', 'recordedBy:id,name']);
 
@@ -102,7 +104,7 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function edit(Payment $payment)
+    public function edit(Payment $payment): InertiaResponse
     {
         $payment->load('invoice.client');
 
@@ -111,7 +113,7 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function update(StorePaymentRequest $request, Payment $payment)
+    public function update(StorePaymentRequest $request, Payment $payment): RedirectResponse
     {
         try {
             DB::transaction(function () use ($request, $payment) {
@@ -139,7 +141,7 @@ class PaymentController extends Controller
         }
     }
 
-    public function destroy(Payment $payment)
+    public function destroy(Payment $payment): RedirectResponse
     {
         $invoiceId = $payment->invoice_id;
 

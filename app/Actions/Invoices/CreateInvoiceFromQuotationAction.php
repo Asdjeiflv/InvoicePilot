@@ -13,6 +13,9 @@ class CreateInvoiceFromQuotationAction
         private NumberingService $numberingService
     ) {}
 
+    /**
+     * @param array<string, mixed> $data
+     */
     public function execute(Quotation $quotation, array $data = []): Invoice
     {
         // Validate quotation status

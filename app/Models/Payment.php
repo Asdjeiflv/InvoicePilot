@@ -3,10 +3,24 @@
 namespace App\Models;
 
 use App\Traits\HasOptimisticLock;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $invoice_id
+ * @property Carbon $payment_date
+ * @property float $amount
+ * @property string $method
+ * @property string|null $reference_no
+ * @property string|null $note
+ * @property int $version
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Invoice $invoice
+ */
 class Payment extends Model
 {
     use HasFactory, HasOptimisticLock;

@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\AuditLog;
 use App\Models\Client;
+use App\Services\CacheService;
 use Illuminate\Support\Facades\Log;
 
 class ClientObserver
@@ -28,6 +29,7 @@ class ClientObserver
     public function created(Client $client): void
     {
         $this->logAudit('created', $client, null, $client->only(self::AUDITABLE_ATTRIBUTES));
+        $this->clearCache($client->id);
     }
 
     /**
@@ -52,6 +54,8 @@ class ClientObserver
             $beforeFiltered = array_intersect_key($changedBefore, $changes);
             $this->logAudit('updated', $client, $beforeFiltered, $changes);
         }
+
+        $this->clearCache($client->id);
     }
 
     /**
@@ -61,6 +65,7 @@ class ClientObserver
     {
         $action = $client->isForceDeleting() ? 'force_deleted' : 'deleted';
         $this->logAudit($action, $client, $client->only(self::AUDITABLE_ATTRIBUTES), null);
+        $this->clearCache($client->id);
     }
 
     /**
@@ -89,6 +94,21 @@ class ClientObserver
             Log::error('監査ログの記録に失敗しました', [
                 'action' => $action,
                 'client_id' => $client->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Clear client cache
+     */
+    private function clearCache(int $clientId): void
+    {
+        try {
+            app(CacheService::class)->clearClientCache($clientId);
+        } catch (\Exception $e) {
+            Log::warning('キャッシュクリアに失敗しました', [
+                'client_id' => $clientId,
                 'error' => $e->getMessage(),
             ]);
         }

@@ -2,10 +2,23 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $quotation_id
+ * @property string $description
+ * @property int $quantity
+ * @property float $unit_price
+ * @property float $tax_rate
+ * @property float $line_total
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Quotation $quotation
+ */
 class QuotationItem extends Model
 {
     use HasFactory;

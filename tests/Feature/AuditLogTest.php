@@ -9,6 +9,7 @@ use App\Models\Payment;
 use App\Models\Quotation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class AuditLogTest extends TestCase
@@ -23,7 +24,7 @@ class AuditLogTest extends TestCase
         $this->user = User::factory()->create(['role' => 'admin']);
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_invoice_creation(): void
     {
         $this->actingAs($this->user);
@@ -55,7 +56,7 @@ class AuditLogTest extends TestCase
         $this->assertEquals(10000, $afterData['total']);
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_invoice_update_with_changes(): void
     {
         $this->actingAs($this->user);
@@ -95,7 +96,7 @@ class AuditLogTest extends TestCase
         $this->assertEquals('issued', $afterData['status']);
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_invoice_deletion(): void
     {
         $this->actingAs($this->user);
@@ -123,7 +124,7 @@ class AuditLogTest extends TestCase
         $this->assertNull($log->after_json);
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_payment_creation(): void
     {
         $this->actingAs($this->user);
@@ -150,7 +151,7 @@ class AuditLogTest extends TestCase
         $this->assertEquals(5000, $afterData['amount']);
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_payment_update(): void
     {
         $this->actingAs($this->user);
@@ -174,7 +175,7 @@ class AuditLogTest extends TestCase
         $this->assertEquals(8000, $afterData['amount']);
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_quotation_creation(): void
     {
         $this->actingAs($this->user);
@@ -193,7 +194,7 @@ class AuditLogTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function it_logs_quotation_status_change(): void
     {
         $this->actingAs($this->user);
@@ -217,7 +218,7 @@ class AuditLogTest extends TestCase
         $this->assertEquals('approved', $afterData['status']);
     }
 
-    /** @test */
+    #[Test]
     public function it_records_ip_address_in_audit_log(): void
     {
         $invoice = Invoice::factory()->create();
@@ -230,7 +231,7 @@ class AuditLogTest extends TestCase
         $this->assertNotNull($log->ip_address);
     }
 
-    /** @test */
+    #[Test]
     public function it_does_not_log_when_only_updated_at_changes(): void
     {
         $this->actingAs($this->user);

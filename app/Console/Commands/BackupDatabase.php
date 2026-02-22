@@ -41,7 +41,7 @@ class BackupDatabase extends Command
         $this->info("Backup created: {$localPath}");
 
         // Cleanup old backups
-        $keepDays = $this->option('keep-days');
+        $keepDays = (int) $this->option('keep-days');
         $cutoffTime = now()->subDays($keepDays)->timestamp;
         $files = glob(storage_path('backups/backup_*.sql'));
         $deletedCount = 0;

@@ -5,13 +5,14 @@ namespace Tests\Feature;
 use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class PaymentPolicyTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function only_admin_and_accounting_can_create_payments(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
@@ -25,7 +26,7 @@ class PaymentPolicyTest extends TestCase
         $this->assertFalse($auditor->can('create', Payment::class));
     }
 
-    /** @test */
+    #[Test]
     public function only_admin_and_accounting_can_update_payments(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
@@ -38,7 +39,7 @@ class PaymentPolicyTest extends TestCase
         $this->assertFalse($sales->can('update', $payment));
     }
 
-    /** @test */
+    #[Test]
     public function only_admin_can_delete_payments(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);

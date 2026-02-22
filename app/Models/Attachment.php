@@ -2,11 +2,26 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+/**
+ * @property int $id
+ * @property string $attachable_type
+ * @property int $attachable_id
+ * @property string $file_name
+ * @property string $file_path
+ * @property string $mime_type
+ * @property int $size
+ * @property int|null $uploaded_by
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Model $attachable
+ * @property-read User|null $uploader
+ */
 class Attachment extends Model
 {
     use HasFactory;

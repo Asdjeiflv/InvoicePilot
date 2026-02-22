@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Traits\HasOptimisticLock;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,6 +11,33 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property string $invoice_no
+ * @property int $client_id
+ * @property int|null $quotation_id
+ * @property Carbon $issue_date
+ * @property Carbon|null $due_date
+ * @property float $subtotal
+ * @property float $tax_total
+ * @property float $total
+ * @property float $paid_amount
+ * @property float $balance_due
+ * @property string $status
+ * @property Carbon|null $sent_at
+ * @property int $created_by
+ * @property int $version
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Client $client
+ * @property-read Quotation|null $quotation
+ * @property-read User $creator
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, InvoiceItem> $items
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Payment> $payments
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Reminder> $reminders
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, AuditLog> $auditLogs
+ */
 class Invoice extends Model
 {
     use HasFactory, HasOptimisticLock, SoftDeletes;

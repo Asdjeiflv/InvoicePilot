@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreClientRequest;
 use App\Http\Requests\UpdateClientRequest;
 use App\Models\Client;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 class ClientController extends Controller
 {
@@ -18,7 +20,7 @@ class ClientController extends Controller
     /**
      * Display a listing of clients
      */
-    public function index(Request $request)
+    public function index(Request $request): InertiaResponse
     {
         $clients = Client::query()
             ->when($request->search, function ($query, $search) {
@@ -41,7 +43,7 @@ class ClientController extends Controller
     /**
      * Show the form for creating a new client
      */
-    public function create()
+    public function create(): InertiaResponse
     {
         return Inertia::render('Clients/Create');
     }
@@ -49,7 +51,7 @@ class ClientController extends Controller
     /**
      * Store a newly created client
      */
-    public function store(StoreClientRequest $request)
+    public function store(StoreClientRequest $request): RedirectResponse
     {
         $client = Client::create($request->validated());
 
@@ -61,7 +63,7 @@ class ClientController extends Controller
     /**
      * Display the specified client
      */
-    public function show(Client $client)
+    public function show(Client $client): InertiaResponse
     {
         $client->load(['quotations' => fn($q) => $q->latest()->take(5),
                        'invoices' => fn($q) => $q->latest()->take(5)]);
@@ -74,7 +76,7 @@ class ClientController extends Controller
     /**
      * Show the form for editing the specified client
      */
-    public function edit(Client $client)
+    public function edit(Client $client): InertiaResponse
     {
         return Inertia::render('Clients/Edit', [
             'client' => $client,
@@ -84,7 +86,7 @@ class ClientController extends Controller
     /**
      * Update the specified client
      */
-    public function update(UpdateClientRequest $request, Client $client)
+    public function update(UpdateClientRequest $request, Client $client): RedirectResponse
     {
         $client->update($request->validated());
 
@@ -96,7 +98,7 @@ class ClientController extends Controller
     /**
      * Remove the specified client
      */
-    public function destroy(Client $client)
+    public function destroy(Client $client): RedirectResponse
     {
         $client->delete();
 

@@ -24,22 +24,32 @@ class RecalculateInvoiceBalanceAction
             }
 
             // Update status based on balance and due date
-            if ($invoice->balance_due <= 0) {
+            // Use bccomp for precise decimal comparison (returns -1, 0, or 1)
+            /** @var -1|0|1 $balanceCmp */
+            $balanceCmp = bccomp((string) $invoice->balance_due, '0', 2);
+            /** @var -1|0|1 $totalCmp */
+            $totalCmp = bccomp((string) $totalPaid, (string) $invoice->total, 2);
+            /** @var -1|0|1 $paidCmp */
+            $paidCmp = bccomp((string) $totalPaid, '0', 2);
+
+            if ($balanceCmp <= 0) {
+                // Fully paid (balance_due <= 0)
                 $invoice->status = 'paid';
-            } elseif ($totalPaid > 0 && $totalPaid < $invoice->total) {
+            } elseif ($paidCmp > 0 && $totalCmp < 0) {
+                // Partially paid (totalPaid > 0 AND totalPaid < total)
                 $invoice->status = 'partial_paid';
-            } elseif ($totalPaid == 0 && $invoice->balance_due > 0) {
-                // No payments, revert to issued or overdue based on due date
+            } elseif ($paidCmp === 0 && $balanceCmp > 0) {
+                // No payments made, determine issued vs overdue
                 if ($invoice->due_date && $invoice->due_date->isPast()) {
                     $invoice->status = 'overdue';
                 } else {
                     $invoice->status = 'issued';
                 }
-            } elseif ($invoice->due_date && $invoice->due_date->isPast() && $invoice->balance_due > 0) {
-                // Only set to overdue if there's an unpaid balance and past due date
+            } elseif ($invoice->due_date && $invoice->due_date->isPast() && $balanceCmp > 0) {
+                // Past due date with outstanding balance
                 $invoice->status = 'overdue';
             } elseif ($invoice->status === 'overdue' && $invoice->due_date && !$invoice->due_date->isPast()) {
-                // Revert from overdue if due date was extended
+                // Due date was extended, revert from overdue
                 $invoice->status = 'issued';
             }
 

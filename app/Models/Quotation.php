@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -9,6 +10,27 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property string $quotation_no
+ * @property int $client_id
+ * @property Carbon $issue_date
+ * @property Carbon|null $valid_until
+ * @property float $subtotal
+ * @property float $tax_total
+ * @property float $total
+ * @property string $status
+ * @property Carbon|null $sent_at
+ * @property int $created_by
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Client $client
+ * @property-read User $creator
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, QuotationItem> $items
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Invoice> $invoices
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, AuditLog> $auditLogs
+ */
 class Quotation extends Model
 {
     use HasFactory, SoftDeletes;

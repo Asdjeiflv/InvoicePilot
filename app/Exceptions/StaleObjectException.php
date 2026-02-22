@@ -3,6 +3,9 @@
 namespace App\Exceptions;
 
 use Exception;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 
 class StaleObjectException extends Exception
 {
@@ -14,7 +17,7 @@ class StaleObjectException extends Exception
     /**
      * Render the exception as an HTTP response.
      */
-    public function render($request)
+    public function render(Request $request): JsonResponse|RedirectResponse
     {
         if ($request->expectsJson()) {
             return response()->json([

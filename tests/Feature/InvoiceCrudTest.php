@@ -8,6 +8,7 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
@@ -33,7 +34,7 @@ class InvoiceCrudTest extends TestCase
         $this->client = Client::factory()->create();
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_create_invoice(): void
     {
         $response = $this->actingAs($this->admin)
@@ -46,7 +47,7 @@ class InvoiceCrudTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function sales_can_create_invoice(): void
     {
         $response = $this->actingAs($this->sales)
@@ -58,7 +59,7 @@ class InvoiceCrudTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function accounting_cannot_create_invoice(): void
     {
         $response = $this->actingAs($this->accounting)
@@ -67,7 +68,7 @@ class InvoiceCrudTest extends TestCase
         $response->assertForbidden();
     }
 
-    /** @test */
+    #[Test]
     public function auditor_cannot_create_invoice(): void
     {
         $response = $this->actingAs($this->auditor)
@@ -76,7 +77,7 @@ class InvoiceCrudTest extends TestCase
         $response->assertForbidden();
     }
 
-    /** @test */
+    #[Test]
     public function it_generates_unique_invoice_number_on_create(): void
     {
         $this->actingAs($this->admin);
@@ -90,7 +91,7 @@ class InvoiceCrudTest extends TestCase
         $this->assertNotEquals($invoice1->invoice_no, $invoice2->invoice_no);
     }
 
-    /** @test */
+    #[Test]
     public function it_calculates_totals_correctly_on_create(): void
     {
         $this->actingAs($this->admin);
@@ -127,7 +128,7 @@ class InvoiceCrudTest extends TestCase
         $this->assertEquals(3850, $invoice->balance_due);
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_update_any_invoice(): void
     {
         $invoice = Invoice::factory()->create([
@@ -141,7 +142,7 @@ class InvoiceCrudTest extends TestCase
         $response->assertRedirect();
     }
 
-    /** @test */
+    #[Test]
     public function sales_can_only_update_draft_invoices(): void
     {
         $draftInvoice = Invoice::factory()->create(['status' => 'draft']);
@@ -158,7 +159,7 @@ class InvoiceCrudTest extends TestCase
         $response2->assertForbidden();
     }
 
-    /** @test */
+    #[Test]
     public function accounting_can_update_issued_invoices(): void
     {
         $invoice = Invoice::factory()->create(['status' => 'issued']);
@@ -169,7 +170,7 @@ class InvoiceCrudTest extends TestCase
         $response->assertRedirect();
     }
 
-    /** @test */
+    #[Test]
     public function auditor_cannot_update_any_invoice(): void
     {
         $invoice = Invoice::factory()->create();
@@ -180,7 +181,7 @@ class InvoiceCrudTest extends TestCase
         $response->assertForbidden();
     }
 
-    /** @test */
+    #[Test]
     public function it_prevents_editing_paid_invoices(): void
     {
         $invoice = Invoice::factory()->create(['status' => 'paid']);
@@ -192,7 +193,7 @@ class InvoiceCrudTest extends TestCase
         $response->assertSessionHasErrors('client_id');
     }
 
-    /** @test */
+    #[Test]
     public function it_prevents_editing_canceled_invoices(): void
     {
         $invoice = Invoice::factory()->create(['status' => 'canceled']);
@@ -204,7 +205,7 @@ class InvoiceCrudTest extends TestCase
         $response->assertSessionHasErrors('client_id');
     }
 
-    /** @test */
+    #[Test]
     public function it_recalculates_totals_on_update(): void
     {
         $invoice = Invoice::factory()->create([
@@ -236,7 +237,7 @@ class InvoiceCrudTest extends TestCase
         $this->assertEquals(5500, $invoice->total);
     }
 
-    /** @test */
+    #[Test]
     public function it_increments_version_on_update(): void
     {
         $invoice = Invoice::factory()->create([
@@ -255,7 +256,7 @@ class InvoiceCrudTest extends TestCase
         $this->assertEquals(2, $invoice->version);
     }
 
-    /** @test */
+    #[Test]
     public function it_detects_concurrent_updates_with_stale_version(): void
     {
         $invoice = Invoice::factory()->create([
@@ -274,7 +275,7 @@ class InvoiceCrudTest extends TestCase
         $this->assertStringContainsString('別のユーザーによって', session('error'));
     }
 
-    /** @test */
+    #[Test]
     public function it_allows_update_with_correct_version(): void
     {
         $invoice = Invoice::factory()->create([
@@ -291,7 +292,7 @@ class InvoiceCrudTest extends TestCase
         $response->assertSessionHas('success');
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_delete_draft_invoices_without_payments(): void
     {
         $invoice = Invoice::factory()->create(['status' => 'draft']);
@@ -303,7 +304,7 @@ class InvoiceCrudTest extends TestCase
         $this->assertSoftDeleted('invoices', ['id' => $invoice->id]);
     }
 
-    /** @test */
+    #[Test]
     public function it_prevents_deletion_of_invoices_with_payments(): void
     {
         $invoice = Invoice::factory()->create(['status' => 'draft']);
@@ -317,7 +318,7 @@ class InvoiceCrudTest extends TestCase
         $this->assertDatabaseHas('invoices', ['id' => $invoice->id]);
     }
 
-    /** @test */
+    #[Test]
     public function non_admin_cannot_delete_invoices(): void
     {
         $invoice = Invoice::factory()->create(['status' => 'draft']);

@@ -8,6 +8,7 @@ use App\Models\Invoice;
 use App\Models\Reminder;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
@@ -42,7 +43,7 @@ class ReminderDuplicatePreventionTest extends TestCase
         $this->action = new SendReminderAction();
     }
 
-    /** @test */
+    #[Test]
     public function it_prevents_sending_reminder_within_7_days(): void
     {
         // Send first reminder
@@ -55,7 +56,7 @@ class ReminderDuplicatePreventionTest extends TestCase
         $this->action->execute($this->invoice, 'normal');
     }
 
-    /** @test */
+    #[Test]
     public function it_allows_sending_reminder_after_7_days(): void
     {
         // Send first reminder
@@ -71,7 +72,7 @@ class ReminderDuplicatePreventionTest extends TestCase
         $this->assertEquals(2, $this->invoice->reminders()->count());
     }
 
-    /** @test */
+    #[Test]
     public function it_prevents_sending_reminder_exactly_at_7_day_boundary(): void
     {
         // Send first reminder
@@ -87,7 +88,7 @@ class ReminderDuplicatePreventionTest extends TestCase
         $this->action->execute($this->invoice, 'normal');
     }
 
-    /** @test */
+    #[Test]
     public function it_shows_when_last_reminder_was_sent_in_error_message(): void
     {
         // Send first reminder
@@ -105,7 +106,7 @@ class ReminderDuplicatePreventionTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_only_checks_recent_reminders_not_old_ones(): void
     {
         // Create old reminder (30 days ago)
@@ -122,7 +123,7 @@ class ReminderDuplicatePreventionTest extends TestCase
         $this->assertEquals(2, $this->invoice->reminders()->count());
     }
 
-    /** @test */
+    #[Test]
     public function it_checks_most_recent_reminder_only(): void
     {
         // Create multiple old reminders
@@ -147,7 +148,7 @@ class ReminderDuplicatePreventionTest extends TestCase
         $this->action->execute($this->invoice, 'normal');
     }
 
-    /** @test */
+    #[Test]
     public function it_allows_sending_different_reminder_types_but_still_enforces_7_day_rule(): void
     {
         // Send a 'soft' reminder

@@ -35,9 +35,14 @@ class IdempotencyMiddleware
 
         if ($cached) {
             // Return cached response
-            return response($cached->response_json, $cached->response_status)
-                ->header('Content-Type', 'application/json')
-                ->header('X-Idempotency-Replay', 'true');
+            $response = response($cached->response_json, $cached->response_status);
+
+            // Only set JSON content type for non-redirect responses
+            if ($cached->response_status < 300 || $cached->response_status >= 400) {
+                $response->header('Content-Type', 'application/json');
+            }
+
+            return $response->header('X-Idempotency-Replay', 'true');
         }
 
         // Process the request

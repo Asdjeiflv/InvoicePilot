@@ -6,13 +6,14 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class AccountingExportController extends Controller
 {
     /**
      * Export invoices to freee-compatible CSV format.
      */
-    public function exportFreee(Request $request)
+    public function exportFreee(Request $request): StreamedResponse
     {
         $validated = $request->validate([
             'start_date' => 'required|date',
@@ -46,7 +47,7 @@ class AccountingExportController extends Controller
     /**
      * Export to Money Forward-compatible CSV format.
      */
-    public function exportMoneyForward(Request $request)
+    public function exportMoneyForward(Request $request): StreamedResponse
     {
         $validated = $request->validate([
             'start_date' => 'required|date',
@@ -230,8 +231,10 @@ class AccountingExportController extends Controller
     /**
      * Escape CSV field.
      */
-    private function escapeCsv($field): string
+    private function escapeCsv(string|int|float|null $field): string
     {
+        $field = (string) $field;
+
         if (strpos($field, ',') !== false || strpos($field, '"') !== false || strpos($field, "\n") !== false) {
             return '"' . str_replace('"', '""', $field) . '"';
         }

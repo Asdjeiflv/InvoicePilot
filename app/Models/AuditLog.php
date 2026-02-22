@@ -2,10 +2,23 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int|null $user_id
+ * @property string $action
+ * @property string|null $target_type
+ * @property int|null $target_id
+ * @property array|null $before_json
+ * @property array|null $after_json
+ * @property string|null $ip_address
+ * @property Carbon $created_at
+ * @property-read User|null $user
+ */
 class AuditLog extends Model
 {
     use HasFactory;

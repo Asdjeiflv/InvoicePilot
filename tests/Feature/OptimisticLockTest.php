@@ -7,13 +7,14 @@ use App\Models\Invoice;
 use App\Models\User;
 use App\Traits\HasOptimisticLock;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class OptimisticLockTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function it_detects_stale_object_with_version_mismatch(): void
     {
         $invoice = Invoice::factory()->create([
@@ -27,7 +28,7 @@ class OptimisticLockTest extends TestCase
         $invoice->checkVersion(0); // Expected version 0, but current is 1
     }
 
-    /** @test */
+    #[Test]
     public function it_allows_update_with_correct_version(): void
     {
         $invoice = Invoice::factory()->create([
@@ -41,7 +42,7 @@ class OptimisticLockTest extends TestCase
         $this->assertTrue(true);
     }
 
-    /** @test */
+    #[Test]
     public function it_increments_version_on_save(): void
     {
         // Create a test model class with HasOptimisticLock trait
@@ -62,7 +63,7 @@ class OptimisticLockTest extends TestCase
         $this->assertEquals($originalVersion + 1, $invoice->version);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_concurrent_updates(): void
     {
         $invoice = Invoice::factory()->create([

@@ -7,9 +7,11 @@ use App\Http\Requests\UpdateQuotationRequest;
 use App\Models\Client;
 use App\Models\Quotation;
 use App\Services\NumberingService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Inertia\Response as InertiaResponse;
 
 class QuotationController extends Controller
 {
@@ -19,7 +21,7 @@ class QuotationController extends Controller
         $this->authorizeResource(Quotation::class, 'quotation');
     }
 
-    public function index(Request $request)
+    public function index(Request $request): InertiaResponse
     {
         $query = Quotation::with(['client:id,code,company_name'])
             ->when($request->search, function ($q, $search) {
@@ -49,7 +51,7 @@ class QuotationController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(): InertiaResponse
     {
         $clients = Client::select('id', 'code', 'company_name')
             ->orderBy('code')
@@ -60,7 +62,7 @@ class QuotationController extends Controller
         ]);
     }
 
-    public function store(StoreQuotationRequest $request)
+    public function store(StoreQuotationRequest $request): RedirectResponse
     {
         $quotation = DB::transaction(function () use ($request) {
             // Generate quotation number
@@ -111,7 +113,7 @@ class QuotationController extends Controller
             ->with('success', '見積を作成しました');
     }
 
-    public function show(Quotation $quotation)
+    public function show(Quotation $quotation): InertiaResponse
     {
         $quotation->load(['client', 'items', 'invoices']);
 
@@ -120,7 +122,7 @@ class QuotationController extends Controller
         ]);
     }
 
-    public function edit(Quotation $quotation)
+    public function edit(Quotation $quotation): InertiaResponse|RedirectResponse
     {
         // Prevent editing of finalized quotations
         if (in_array($quotation->status, ['approved', 'rejected', 'expired'])) {
@@ -140,7 +142,7 @@ class QuotationController extends Controller
         ]);
     }
 
-    public function update(UpdateQuotationRequest $request, Quotation $quotation)
+    public function update(UpdateQuotationRequest $request, Quotation $quotation): RedirectResponse
     {
         DB::transaction(function () use ($request, $quotation) {
             // Calculate totals
@@ -185,7 +187,7 @@ class QuotationController extends Controller
             ->with('success', '見積を更新しました');
     }
 
-    public function destroy(Quotation $quotation)
+    public function destroy(Quotation $quotation): RedirectResponse
     {
         // Prevent deletion of approved quotations with invoices
         if ($quotation->status === 'approved' && $quotation->invoices()->exists()) {
@@ -202,7 +204,7 @@ class QuotationController extends Controller
     /**
      * Approve a quotation
      */
-    public function approve(Quotation $quotation)
+    public function approve(Quotation $quotation): RedirectResponse
     {
         $this->authorize('update', $quotation);
 
@@ -218,7 +220,7 @@ class QuotationController extends Controller
     /**
      * Reject a quotation
      */
-    public function reject(Quotation $quotation)
+    public function reject(Quotation $quotation): RedirectResponse
     {
         $this->authorize('update', $quotation);
 

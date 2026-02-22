@@ -7,6 +7,7 @@ use App\Models\Invoice;
 use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class PaymentCrudTest extends TestCase
@@ -40,7 +41,7 @@ class PaymentCrudTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_create_payment(): void
     {
         $response = $this->actingAs($this->admin)
@@ -53,7 +54,7 @@ class PaymentCrudTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function accounting_can_create_payment(): void
     {
         $response = $this->actingAs($this->accounting)
@@ -65,7 +66,7 @@ class PaymentCrudTest extends TestCase
         ]);
     }
 
-    /** @test */
+    #[Test]
     public function sales_cannot_create_payment(): void
     {
         $response = $this->actingAs($this->sales)
@@ -74,7 +75,7 @@ class PaymentCrudTest extends TestCase
         $response->assertForbidden();
     }
 
-    /** @test */
+    #[Test]
     public function auditor_cannot_create_payment(): void
     {
         $response = $this->actingAs($this->auditor)
@@ -83,7 +84,7 @@ class PaymentCrudTest extends TestCase
         $response->assertForbidden();
     }
 
-    /** @test */
+    #[Test]
     public function it_recalculates_invoice_balance_after_payment(): void
     {
         $this->actingAs($this->admin)
@@ -96,7 +97,7 @@ class PaymentCrudTest extends TestCase
         $this->assertEquals('partial_paid', $this->invoice->status);
     }
 
-    /** @test */
+    #[Test]
     public function it_marks_invoice_as_paid_when_fully_paid(): void
     {
         $this->actingAs($this->admin)
@@ -109,7 +110,7 @@ class PaymentCrudTest extends TestCase
         $this->assertEquals('paid', $this->invoice->status);
     }
 
-    /** @test */
+    #[Test]
     public function it_handles_multiple_partial_payments(): void
     {
         $this->actingAs($this->admin);
@@ -133,7 +134,7 @@ class PaymentCrudTest extends TestCase
         $this->assertEquals('paid', $this->invoice->status);
     }
 
-    /** @test */
+    #[Test]
     public function it_prevents_overpayment(): void
     {
         $response = $this->actingAs($this->admin)
@@ -143,7 +144,7 @@ class PaymentCrudTest extends TestCase
         $this->assertStringContainsString('残高', session('errors')->first('amount'));
     }
 
-    /** @test */
+    #[Test]
     public function it_prevents_payment_on_draft_invoice(): void
     {
         $draftInvoice = Invoice::factory()->create([
@@ -160,7 +161,7 @@ class PaymentCrudTest extends TestCase
         $response->assertSessionHasErrors('amount');
     }
 
-    /** @test */
+    #[Test]
     public function it_prevents_payment_on_canceled_invoice(): void
     {
         $canceledInvoice = Invoice::factory()->create([
@@ -177,7 +178,7 @@ class PaymentCrudTest extends TestCase
         $response->assertSessionHasErrors('amount');
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_update_payment(): void
     {
         $payment = Payment::factory()->create([
@@ -196,7 +197,7 @@ class PaymentCrudTest extends TestCase
         $this->assertEquals(3000, $payment->amount);
     }
 
-    /** @test */
+    #[Test]
     public function it_recalculates_balance_after_payment_update(): void
     {
         // Initial payment of 3000
@@ -223,7 +224,7 @@ class PaymentCrudTest extends TestCase
         $this->assertEquals(5000, $this->invoice->balance_due);
     }
 
-    /** @test */
+    #[Test]
     public function it_increments_version_on_payment_update(): void
     {
         $payment = Payment::factory()->create([
@@ -242,7 +243,7 @@ class PaymentCrudTest extends TestCase
         $this->assertEquals(2, $payment->version);
     }
 
-    /** @test */
+    #[Test]
     public function it_detects_concurrent_payment_updates(): void
     {
         $payment = Payment::factory()->create([
@@ -260,7 +261,7 @@ class PaymentCrudTest extends TestCase
         $this->assertStringContainsString('別のユーザーによって', session('error'));
     }
 
-    /** @test */
+    #[Test]
     public function admin_can_delete_payment(): void
     {
         $payment = Payment::factory()->create([
@@ -280,7 +281,7 @@ class PaymentCrudTest extends TestCase
         $this->assertDatabaseMissing('payments', ['id' => $payment->id]);
     }
 
-    /** @test */
+    #[Test]
     public function it_recalculates_balance_after_payment_deletion(): void
     {
         $payment = Payment::factory()->create([
@@ -304,7 +305,7 @@ class PaymentCrudTest extends TestCase
         $this->assertEquals('issued', $this->invoice->status);
     }
 
-    /** @test */
+    #[Test]
     public function non_admin_and_non_accounting_cannot_delete_payment(): void
     {
         $payment = Payment::factory()->create(['invoice_id' => $this->invoice->id]);
